@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Webhook Engine · Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+
+<div class="shell">
+
+
+  <aside class="sidebar">
+    <div class="logo-mark">
+  <img src="image.png" alt="Nestack Logo" class="logo-image">
+
+  <div class="logo-text">
+    <div class="logo-title">Nestack</div>
+    <div class="logo-tagline">Webhook Engine</div>
+  </div>
+</div>
+  
+
+    <nav class="nav">
+      <div class="nav-label">Navigation</div>
+      <div class="nav-item active" onclick="showView('dashboard')">
+        <div class="nav-dot"></div> Dashboard
+      </div>
+      <div class="nav-item" onclick="showView('create')">
+        <div class="nav-dot"></div> Create Event
+      </div>
+
+      <div class="nav-label" style="margin-top:20px">Filter</div>
+      <div class="nav-item" onclick="filterNav('all')">
+        <div class="nav-dot"></div> All Events
+      </div>
+      <div class="nav-item" onclick="filterNav('pending')">
+        <div class="nav-dot"></div> Pending
+      </div>
+      <div class="nav-item" onclick="filterNav('delivered')">
+        <div class="nav-dot"></div> Delivered
+      </div>
+      <div class="nav-item" onclick="filterNav('dead')">
+        <div class="nav-dot"></div> Dead
+      </div>
+    </nav>
+
+    <div class="server-status">
+      <div class="status-row">
+        <div class="pulse" id="serverPulse"></div>
+        <div class="status-text">API: <span id="serverStatusText">localhost:3000</span></div>
+      </div>
+      <div style="margin-top:8px; color: var(--muted); font-size:10px;" id="lastRefresh">—</div>
+    </div>
+  </aside>
+
+
+  <main class="main">
+
+  
+    <div class="topbar">
+      <div class="topbar-title" id="viewTitle">Dashboard</div>
+      <div class="topbar-right">
+        <span style="font-size:10px; color:var(--muted); margin-right:4px;">API:</span>
+        <input class="form-input" id="apiBase" value="http://localhost:3000"
+          style="width:200px; padding:5px 10px; font-size:11px;" placeholder="http://localhost:3000"/>
+        <button class="btn btn-ghost" onclick="refreshAll()" id="refreshBtn">
+          <span id="refreshIcon">↻</span> Refresh
+        </button>
+        <button class="btn btn-primary" onclick="showView('create')">
+          + New Event
+        </button>
+      </div>
+    </div>
+
+
+    <div class="content">
+
+   
+      <div id="view-dashboard">
+       
+        <div class="stats-grid">
+          <div class="stat-card total">
+            <div class="stat-label">Total Events</div>
+            <div class="stat-value" id="stat-total">—</div>
+            <div class="stat-sub">all time</div>
+          </div>
+          <div class="stat-card delivered">
+            <div class="stat-label">Delivered</div>
+            <div class="stat-value" id="stat-delivered">—</div>
+            <div class="stat-sub">successful</div>
+          </div>
+          <div class="stat-card pending">
+            <div class="stat-label">Pending / Processing</div>
+            <div class="stat-value" id="stat-pending">—</div>
+            <div class="stat-sub">in queue</div>
+          </div>
+          <div class="stat-card dead">
+            <div class="stat-label">Dead</div>
+            <div class="stat-value" id="stat-dead">—</div>
+            <div class="stat-sub">all retries exhausted</div>
+          </div>
+        </div>
+
+        
+        <div class="panels">
+          
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Events</div>
+              <div class="filter-bar" style="margin:0; gap:6px;">
+                <button class="filter-btn active" data-status="all" onclick="setFilter('all')">All</button>
+                <button class="filter-btn" data-status="pending" onclick="setFilter('pending')">Pending</button>
+                <button class="filter-btn" data-status="delivered" onclick="setFilter('delivered')">Delivered</button>
+                <button class="filter-btn" data-status="dead" onclick="setFilter('dead')">Dead</button>
+                <button class="filter-btn" data-status="processing" onclick="setFilter('processing')">Processing</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="event-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Target URL</th>
+                    <th>Status</th>
+                    <th>Retries</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="eventTableBody">
+                  <tr><td colspan="6"><div class="empty"><div class="spinner"></div></div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+       
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Quick Test</div>
+            </div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="form-label">Event Type</label>
+                <input class="form-input" id="q-type" placeholder="payment.success" value="payment.success"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Webhook URL</label>
+                <input class="form-input" id="q-url" placeholder="https://..." value="https://httpbin.org/post"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Payload (JSON)</label>
+                <textarea class="form-textarea" id="q-payload">{"user": "john", "amount": 200}</textarea>
+              </div>
+              <button class="btn btn-primary" style="width:100%;" onclick="quickFire()">
+                 Test Webhook
+              </button>
+              <div style="margin-top:12px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:6px;">
+                <div style="font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:8px;">Test URLs</div>
+                <div style="font-size:10px; color:var(--muted2); line-height:2;">
+                  ✅ <span style="color:var(--green);">https://httpbin.org/post</span><br/>
+                  ❌ <span style="color:var(--red);">https://invalid.bad/hook</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div id="view-create" style="display:none; max-width:560px;">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Create New Webhook Event</div>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label class="form-label">Event Type *</label>
+              <input class="form-input" id="c-type" placeholder="e.g. payment.failed, user.signup"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Webhook URL *</label>
+              <input class="form-input" id="c-url" placeholder="https://your-server.com/webhook"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Payload (JSON) *</label>
+              <textarea class="form-textarea" id="c-payload" style="min-height:140px;">{
+  "user": "john",
+  "amount": 200
+}</textarea>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:4px;">
+              <button class="btn btn-primary" onclick="createWebhookEvent()" style="flex:1;">
+                Create &amp; Queue Event
+              </button>
+              <button class="btn btn-ghost" onclick="showView('dashboard')">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <div>
+      <div style="font-family:'Syne',sans-serif; font-weight:700; font-size:15px;" id="drawerTitle">Event Detail</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:4px;" id="drawerSubtitle"></div>
+    </div>
+    <button class="close-btn" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-footer" id="drawerFooter"></div>
+</div>
+
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="./script.js"></script>
+</body>
+</html>
