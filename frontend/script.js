@@ -1,5 +1,4 @@
-
-const API = () => document.getElementById('apiBase').value.replace(/\/$/, '');
+const API = () => "https://shatakshi-nestack-submission.onrender.com";
 let currentFilter = 'all';
 let allEvents = [];
 let autoRefreshTimer = null;
