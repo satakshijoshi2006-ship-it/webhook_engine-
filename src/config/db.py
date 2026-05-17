@@ -3,7 +3,10 @@ import sqlite3
 import os
 from src.utils.logger import log_info
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "../../database/webhook.db")
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "app.db")
 
 def get_connection():
     """Return a new SQLite connection with row factory enabled."""
