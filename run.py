@@ -18,6 +18,10 @@ from src.utils.logger import log_info
 
 def create_app():
     app = Flask(__name__)
+    
+    @app.route("/")
+    def home():
+     return "Application Running Successfully"
     @app.route("/health", methods=["GET"])
     def health():
       return {
